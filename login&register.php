@@ -1,6 +1,8 @@
 <?php
 session_start();
-include('./layout/navbar.php');
+include('./admin/db.php');
+
+$alertMessage = '';
 
 if(isset($_POST['register'])){
     $u_name=$_POST['u_name'];
@@ -13,7 +15,7 @@ if(isset($_POST['register'])){
         $stmt = $pdo->prepare('INSERT INTO users (user_name, user_email, user_password, user_address, user_phone, user_role) VALUES (?, ?, ?, ?, ?, ?)');
         $stmt->execute([$u_name, $u_email, $u_password, $u_address, $u_phone, $u_role]);
     }else{
-        echo "<script> alert('please fill your input') </script>";
+        $alertMessage = 'please fill your input';
     }
 }
 
@@ -23,28 +25,32 @@ if(isset($_POST['login'])){
     $stmt = $pdo->prepare('SELECT * FROM users WHERE user_email = ? AND user_password = ?');
     $stmt->execute([$user_email, $user_password]);
     $row = $stmt->fetch();
-   
-    
     if(isset($row['user_id'])){
         $user_id=$row['user_id'];
         $user_role=$row['user_role'];
         $_SESSION['user_id']=$user_id;
         if($user_role=="Admin"){
             $_SESSION['admin']=true;
-            header("Location: admin/index.php");
+            header("Location: ./admin/index.php");
             exit();
         }else{
             $_SESSION['login']=true;
-            header("Location: index.php");
+            header("Location: ./index.php");
             exit();
         }
     }else{
-        echo "<script> alert('your data is false') </script>";
+        $alertMessage = 'your data is false';
     };
     
 }
 
+include('./layout/navbar.php');
+
 ?>
+
+<?php if(!empty($alertMessage)): ?>
+<script>alert('<?php echo $alertMessage; ?>')</script>
+<?php endif; ?>
 
 <div class="container mb-5 px-3" style="margin-top: 100px;">
     <div class="d-flex justify-content-between">
